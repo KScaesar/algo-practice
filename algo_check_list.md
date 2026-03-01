@@ -12,8 +12,12 @@
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
 - **Sliding Window (滑動窗口)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通
   - _常犯錯誤/思考盲點：_
+    - 初始直覺是「找全域最大最小相減」，未立即意識到時間線性要素（最小值可能出現在最大值之後）。
+    - **Kadane's 差分方向踩坑**：實作時寫成 `prices[i-1] - prices[i]`（跌幅），應為 `prices[i] - prices[i-1]`（漲幅），需提醒才修正。
+    - **Kadane's 換日機制**：未能立即想到 `current_sum < 0 → 歸零` 就是「放棄舊買入點、以今天為新起點」的語意，需引導才理解。
+    - **與 1-D DP 的識別差異**：Sliding Window 的核心是「一段連續窗口的最佳值」，R 固定往右、L 按條件移動；1-D DP 則是「當前狀態依賴多個過去子問題」，且子問題範圍不一定連續（如 House Robber 不能選相鄰）。LC 121 雖然也可用 DP 解，但 dp[i] 只看 i-1，可壓縮成 Sliding Window，分類以最直觀解法為準。
 - **Stack (堆疊)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -49,6 +53,7 @@
 - **1-D Dynamic Programming (一維動態規劃)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
+    - **與 Sliding Window 的識別差異**：DP 適合「需要跳著選或非連續子問題」的場景（如 House Robber 的隔格選取）；若子問題只依賴「一段連續區間」，通常能用 Sliding Window 取代且更直觀。判斷口訣：當 dp 陣列可以滾動壓縮成一兩個變數時，優先考慮是否為 Sliding Window 問題。
 - **2-D Dynamic Programming (二維動態規劃)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -69,3 +74,4 @@
 
 - [2026-02-28] LC 215 Kth Largest Element in an Array (Heap / Priority Queue): 概念掌握紮實，直接推導出 Min-Heap + size-k 解法與 O(n log k) 正確複雜度。實作上需要查 heapq API；insert 邏輯起初漏掉 heap 未滿時無條件 push 的情境，提示後立即修正。對 streaming 場景（stateful class vs one-shot function）的設計模式尚未熟悉，建議下一步練習 LC 703。
 - [2026-02-28] LC 215 QuickSelect 延伸 (Heap / Priority Queue): 成功獨立實作 QuickSelect。需提示才理解 pivot 是隨意選的值（與 k 無關）；`>=` vs `>` 在重複元素退化問題未主動發現，提醒後能立即理解並修正。在 `_quickselect` 判斷停止條件時，未能立即想到 k 是 1-indexed、要與 pivot index 比較需轉換為 `k-1`（0-indexed）。
+- [2026-03-01] LC 121 Best Time to Buy and Sell Stock (Sliding Window / Arrays): 第一直覺「找全域最大最小相減」被自己識破（有時間線性要素）。暴力解描述清晰正確（O(n²) 雙迴圈）。Single Pass 解法獨立完成，邏輯清晰。Kadane's 變體：踩了差分方向 bug（prices[i-1] - prices[i] 順序搞反）；current_sum < 0 → 歸零的「換日」語意需引導後豁然開朗。整體表現良好，Kadane's intuition 建立完整。
