@@ -32,8 +32,14 @@
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
 - **Trees (樹)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通
   - _常犯錯誤/思考盲點：_
+    - **定義正確的 DFS 回傳值（核心）**：DFS 函數回傳的不一定是答案，而是「對父節點有用的資訊」。思考方式：站在當前節點，我需要從子節點知道什麼，才能算出我的結果？這決定了回傳值的定義。
+    - **DFS 回傳值 vs. 全域答案**：兩者不一定相同。若答案可以直接由 root 的回傳值得到（如樹高），不需要全域變數。若答案需要在遍歷過程中跨節點比較（如路徑最大和），則需要在 DFS 內部另外維護全域變數更新。
+      - 範例 — 樹高，解法 A（後序）：`dfs` 回傳子樹高度，`root` 的回傳值直接就是答案，無需全域變數。
+      - 範例 — 樹高，解法 B（前序）：`dfs` 帶著當前深度向下傳，在每個節點更新全域 `max_depth`，答案存在全域變數裡。
+    - **後序遍歷識別**：需要先知道子節點的結果才能決定自身行為，因此是後序（左 → 右 → 根）。
+
 - **Heap / Priority Queue (堆積 / 優先佇列)**
   - _熟練度評估：_ 普通
   - _常犯錯誤/思考盲點：_
@@ -80,3 +86,4 @@
 - [2026-02-28] LC 215 QuickSelect 延伸 (Heap / Priority Queue): 成功獨立實作 QuickSelect。需提示才理解 pivot 是隨意選的值（與 k 無關）；`>=` vs `>` 在重複元素退化問題未主動發現，提醒後能立即理解並修正。在 `_quickselect` 判斷停止條件時，未能立即想到 k 是 1-indexed、要與 pivot index 比較需轉換為 `k-1`（0-indexed）。
 - [2026-03-01] LC 121 Best Time to Buy and Sell Stock (Sliding Window / Arrays): 第一直覺「找全域最大最小相減」被自己識破（有時間線性要素）。暴力解描述清晰正確（O(n²) 雙迴圈）。Single Pass 解法獨立完成，邏輯清晰。Kadane's 變體：踩了差分方向 bug（prices[i-1] - prices[i] 順序搞反）；current_sum < 0 → 歸零的「換日」語意需引導後豁然開朗。整體表現良好，Kadane's intuition 建立完整。
 - [2026-03-01] LC 3 Longest Substring Without Repeating Characters (Sliding Window): 第一直覺正確（雙指標 + map），但初版設計 map 存「出現次數」，提問後自行發現應改存「上次出現 index」，洞察力佳。犯了兩個操作順序 bug：(1) 先覆蓋 last_seen 再讀取舊值，導致 left 跳過頭；(2) else 分支漏更新 result，忽略「left 不動時視窗仍會變大」的情境（用 tmmzuxt 反例觸發）。max(left, ...) 的防倒退語意在提示反例 abba 後自行推導出。整體思路清晰，屬於「細節實作陷阱」類型的錯誤，非概念盲點。
+- [2026-03-04] LC 124 Binary Tree Maximum Path Sum (Trees / DFS): 複習核心概念與思考過程。掌握了「轉彎點」直覺（路徑最高點 = 左+根+右），及後序遍歷 DFS 的雙重職責：回傳上層只能單側（`node.val + max(left, right)`）、更新全域可兩側（`node.val + left + right`）。關鍵洞察：負貢獻以 `max(0, gain)` 截斷。時間 O(N)，空間 O(H)。

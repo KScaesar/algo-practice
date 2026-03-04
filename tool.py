@@ -1,5 +1,50 @@
 from functools import wraps
+from collections import deque
 from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def build_tree(vals: list) -> Optional[TreeNode]:
+    """
+    從 LeetCode 層序陣列 (BFS order) 建立二元樹。
+
+    建立方式：BFS (Breadth-First Search / 廣度優先)
+      - 用 queue 依序取出父節點，依陣列順序將下一個值
+        分別指派為其左子節點、再右子節點。
+      - None 代表該位置無節點（但不會再展開其子節點）。
+
+    Example:
+        vals = [-10, 9, 20, None, None, 15, 7]
+
+        建出的樹：
+              -10
+             /    \
+            9     20
+                 /  \
+                15    7
+    """
+    if not vals:
+        return None
+    root = TreeNode(vals[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(vals):
+        node = queue.popleft()
+        if i < len(vals) and vals[i] is not None:
+            node.left = TreeNode(vals[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(vals) and vals[i] is not None:
+            node.right = TreeNode(vals[i])
+            queue.append(node.right)
+        i += 1
+    return root
 
 
 class ListNode:
