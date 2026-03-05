@@ -53,7 +53,7 @@ class ListNode:
         self.next = next
 
 
-def create_linklist_from_array(arr: list[int]) -> Optional[ListNode]:
+def build_linklist(arr: list[int]) -> Optional[ListNode]:
     """
     從陣列 (Array/List) 建立一個單向鏈結串列 (Linked List)
     """

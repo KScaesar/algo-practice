@@ -1,6 +1,6 @@
 from typing import Optional
 
-from tool import ListNode, create_linklist_from_array, traversal_linklist
+from tool import ListNode, build_linklist, traversal_linklist
 
 # -------------------------------
 # 針對 ListNode 的合併 (Merge) 實踐
@@ -98,11 +98,8 @@ if __name__ == '__main__':
     ]
     
     for arr in test_cases:
-        # 1. 將陣列轉為 Linked List
-        head = create_linklist_from_array(arr)
-        # 2. 對 Linked List 進行 Merge Sort
+        head = build_linklist(arr)
         sorted_head = merge_sort_list(head)
-        # 3. 把排序後的 Linked List 轉回陣列來檢查
         result = traversal_linklist(sorted_head)
         
         expected = sorted(arr)
