@@ -56,8 +56,12 @@
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
 - **Graphs (圖)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通（Multi-Source BFS 掌握度高）
   - _常犯錯誤/思考盲點：_
+    - **Multi-Source BFS 識別**：能主動識別「多個起點同時展開」的場景（腐爛橙子、牆與門等），直接將所有起點入隊，不需要逐一 BFS。
+    - **`minute += 1` 時機**：正確識別步數計算應在整個 level traversal 結束後，不是每次 pop 後。
+    - **邊界條件識別**：主動識別「一開始就沒有新鮮 orange」需回傳 0，並發現此情況其實被演算法本身隱性處理（`total == rotten` 在 BFS 前成立）。
+    - **Invariant 推理**：理解 while 迴圈結束後 `total != rotten` 是不變量，最終可直接 `return -1`，原始的 ternary 寫法是等價但具防禦性的 self-documenting 風格。
 - **Advanced Graphs (進階圖論)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -89,3 +93,4 @@
 - [2026-03-01] LC 3 Longest Substring Without Repeating Characters (Sliding Window): 第一直覺正確（雙指標 + map），但初版設計 map 存「出現次數」，提問後自行發現應改存「上次出現 index」，洞察力佳。犯了兩個操作順序 bug：(1) 先覆蓋 last_seen 再讀取舊值，導致 left 跳過頭；(2) else 分支漏更新 result，忽略「left 不動時視窗仍會變大」的情境（用 tmmzuxt 反例觸發）。max(left, ...) 的防倒退語意在提示反例 abba 後自行推導出。整體思路清晰，屬於「細節實作陷阱」類型的錯誤，非概念盲點。
 - [2026-03-04] LC 124 Binary Tree Maximum Path Sum (Trees / DFS): 複習核心概念與思考過程。掌握了「轉彎點」直覺（路徑最高點 = 左+根+右），及後序遍歷 DFS 的雙重職責：回傳上層只能單側（`node.val + max(left, right)`）、更新全域可兩側（`node.val + left + right`）。關鍵洞察：負貢獻以 `max(0, gain)` 截斷。時間 O(N)，空間 O(H)。
 - [2026-03-10] LC 102 Binary Tree Level Order Traversal (Trees / BFS): 成功且正確實作 BFS 模板。能清晰描述 BFS 的三個層次：(1) while queue > 0 控制總體結束；(2) for \_ in range(size) 控制單層邊界；(3) 處理內部子節點 (left/right) 加入 queue。觀念穩固，無明顯思考盲點。時間 O(N)，空間 O(N)。
+- [2026-03-10] LC 994 Rotting Oranges (Graphs / Multi-Source BFS): 自行完整描述 Multi-Source BFS 解法並直接進入實作。立即識別將所有腐爛起點一次性入隊的策略，`minute += 1` 時機正確（level traversal 後）。主動識別「全是 rotten/empty」邊界條件，且能理解此邊界被演算法隱性處理。能推論 while 結束後的不變量（`total != rotten`），理解最終 return 可簡化。整體概念清晰，屬首次解題成功。時間 O(m×n)，空間 O(m×n)。
