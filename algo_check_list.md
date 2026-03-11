@@ -50,8 +50,13 @@
     - **QuickSelect**：pivot 的目的（分割，與 k 無關）需提示才理解；`>=` vs `>` 在重複元素時可能退化成 O(n²) 未主動意識到。
     - **QuickSelect Index 轉換**：未能立即意識到 k 是 1-indexed（第 1 大 = 最大值），而降序排序後對應的 0-indexed 位置是 `k-1`，導致在 `_quickselect` 中與 pivot index `p` 比較時，不確定應寫 `p == k` 還是 `p == k-1`。需銘記：**第 k 大 → index k-1**。
 - **Backtracking (回溯法)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通（框架建立中）
   - _常犯錯誤/思考盲點：_
+    - **參數語意混淆**（LC 139）：過去在 Combination/Subset 類題目習慣用 `i` 表示 wordDict 的 index，for loop 從 `i` 開始（保證不重複挑選）。本題推進的是「字串 s 消耗到哪個位置」，參數應是 `start = s 的 index`，for loop 重頭掃整個 wordDict（允許重複使用）。兩者設計不同，核心差異在「推進維度」。
+    - **Backtracking 兩種模式對比**：
+      - **子集合/組合（Combination）模式**：`for j in range(i, n)`，每個元素最多選一次，保持順序。適用：Combination Sum（不可重複）、Subsets 等。
+      - **可重複使用（with repetition）模式**：`for w in wordDict`（每層全掃），允許同一個字多次使用，推進的是目標序列的消耗位置。適用：Word Break、Combination Sum II（可重複）等。
+    - **Dead code 陷阱**（LC 139）：在 `can_break(start)` 加 `if start > len(s): return False` 是 dead code。原因：Python slice 超出範圍會截短，長度不符則 `s[start:end] == w` 一定為 False，因此遞迴傳入的 `start` 永遠 `<= len(s)`，該條件永不觸發。
 - **Tries (字典樹)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -118,4 +123,5 @@
 - [2026-03-10] LC 994 Rotting Oranges (Graphs / Multi-Source BFS): 自行完整描述 Multi-Source BFS 解法並直接進入實作。立即識別將所有腐爛起點一次性入隊的策略，`minute += 1` 時機正確（level traversal 後）。主動識別「全是 rotten/empty」邊界條件，且能理解此邊界被演算法隱性處理。能推論 while 結束後的不變量（`total != rotten`），理解最終 return 可簡化。整體概念清晰，屬首次解題成功。時間 O(m×n)，空間 O(m×n)。
 - [2026-03-11] LC 207 Course Schedule (Graphs / DFS + BFS): 正確識別「有向圖環形偵測」核心。自行推導出三色狀態機（unseen/path/seen）並完整說明語意。初版將 state 變更寫在 for 迴圈內，提示後立即理解並修正（狀態是節點層級，非邊層級）。完成 BFS Kahn's Algorithm 實作；誤用 level-by-level 模板，提示後簡化；自行觀察到 DFS/BFS 圖方向相反的現象並補充註解。兩種解法均獨立完成且測試通過。時間 O(V+E)，空間 O(V+E)。
 - [2026-03-11] LC 452 Minimum Number of Arrows to Burst Balloons (Intervals / Greedy): 熟練度：普通→熟練。概念澄清方面：初始誤解 Bounding Box（找 max(start)/min(end)），提示後正確理解題目是「最少點覆蓋」問題。核心貪心邏輯上對「為何按 end 排序（EDF 思維）」一開始理解有困難，引導後能以具體反例（A=[1,10]、B=[2,3]、C=[4,5]）對比 start 排序 vs end 排序的邏輯複雜度，豁然開朗。交換論證（Exchange Argument）獨立理解無困難。實作上一開始漏掉 sorted() 第一個位置參數（`sorted(key=...)` 少傳 iterable），自行發現並修正。最終實作乾淨簡潔：按 end 排序 + 初始化「先射第一支箭」（類 dummy node 設計）+ 單趟掃描。時間 O(n log n)，空間 O(n)（可改 in-place sort 優化為 O(1)）。
-
+- [2026-03-11] LC 139 Word Break — Backtracking 解法 (Backtracking / 1-D DP): 首次明確區分兩種 Backtracking 模式。初始直覺是暴力組合所有可能，在引導下正確重構為「推進字串消耗位置」的框架。能自行撰寫正確的 `can_break` 遞迴，并主動嘗試從後往前收斂（`can_break(len(s)) → 0`）的方向，與原始版和 DP 均等價正確。觀察到 dead code（`start > len(s)` 永不觸發），能理解 Python slice 截短原因。對「Combination 模式（from i）」vs「Word Break 模式（全掃 wordDict）」的差異在提示後清晰理解。時間 O(W^N)，空間 O(N)。
+- [2026-03-11] LC 139 Word Break — DP 解法 (1-D DP): 自行定義 `dp[i] = s[:i] 是否可被拆解`，並推導子問題轉移方程有兩種等效技法（dp[i-w] 推 forward 、dp[i+w] 從 back），能自行辨別並選擇其一實作。理解 DP = Backtracking+@cache 的 bottom-up 等價形式，兩者複雜度相同 O(N×W×L)。時間複雜度註解初定為 O(N×W)，提示後理解 slice 比對慿耗 O(L)。實作乾淨簡潔且測試通過。最佳下一题：LC 322 Coin Change、LC 377 Combination Sum IV、LC 140 Word Break II。
