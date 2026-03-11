@@ -58,10 +58,14 @@
 - **Graphs (圖)**
   - _熟練度評估：_ 普通（Multi-Source BFS 掌握度高）
   - _常犯錯誤/思考盲點：_
+    - **圖的表示方式**：Adjacency List `graph[node] = [鄰居...]` 空間 O(V+E)，適合稀疏圖；Adjacency Matrix `matrix[u][v]` 空間 O(V²)，適合稠密圖，查詢單條邊 O(1)。競賽/面試預設用 Adjacency List。
     - **Multi-Source BFS 識別**：能主動識別「多個起點同時展開」的場景（腐爛橙子、牆與門等），直接將所有起點入隊，不需要逐一 BFS。
     - **`minute += 1` 時機**：正確識別步數計算應在整個 level traversal 結束後，不是每次 pop 後。
     - **邊界條件識別**：主動識別「一開始就沒有新鮮 orange」需回傳 0，並發現此情況其實被演算法本身隱性處理（`total == rotten` 在 BFS 前成立）。
     - **Invariant 推理**：理解 while 迴圈結束後 `total != rotten` 是不變量，最終可直接 `return -1`，原始的 ternary 寫法是等價但具防禦性的 self-documenting 風格。
+    - **DFS 三色狀態機**（LC 207）：能正確提出 `unseen / path / seen` 三態設計；初版將 `state[course] = "path"` / `"seen"` 放在 for 迴圈內部，提示後自行理解「狀態改變是節點層級的事，不是邊層級的事」並修正至迴圈外。
+    - **BFS vs DFS Graph 方向相反**（LC 207）：自行觀察到 DFS 建的是 `course ← pre`（追蹤依賴來源），BFS 建的是 `pre → course`（往下游擴散），兩者邊方向相反是解法結構決定的，非隨意選擇。
+    - **BFS level-by-level 模式誤用**（LC 207）：在 Kahn's Algorithm 中使用了 `size = len(queue)` 的層序模板，實際上不需要逐層處理，提醒後簡化。
 - **Advanced Graphs (進階圖論)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -94,3 +98,4 @@
 - [2026-03-04] LC 124 Binary Tree Maximum Path Sum (Trees / DFS): 複習核心概念與思考過程。掌握了「轉彎點」直覺（路徑最高點 = 左+根+右），及後序遍歷 DFS 的雙重職責：回傳上層只能單側（`node.val + max(left, right)`）、更新全域可兩側（`node.val + left + right`）。關鍵洞察：負貢獻以 `max(0, gain)` 截斷。時間 O(N)，空間 O(H)。
 - [2026-03-10] LC 102 Binary Tree Level Order Traversal (Trees / BFS): 成功且正確實作 BFS 模板。能清晰描述 BFS 的三個層次：(1) while queue > 0 控制總體結束；(2) for \_ in range(size) 控制單層邊界；(3) 處理內部子節點 (left/right) 加入 queue。觀念穩固，無明顯思考盲點。時間 O(N)，空間 O(N)。
 - [2026-03-10] LC 994 Rotting Oranges (Graphs / Multi-Source BFS): 自行完整描述 Multi-Source BFS 解法並直接進入實作。立即識別將所有腐爛起點一次性入隊的策略，`minute += 1` 時機正確（level traversal 後）。主動識別「全是 rotten/empty」邊界條件，且能理解此邊界被演算法隱性處理。能推論 while 結束後的不變量（`total != rotten`），理解最終 return 可簡化。整體概念清晰，屬首次解題成功。時間 O(m×n)，空間 O(m×n)。
+- [2026-03-11] LC 207 Course Schedule (Graphs / DFS + BFS): 正確識別「有向圖環形偵測」核心。自行推導出三色狀態機（unseen/path/seen）並完整說明語意。初版將 state 變更寫在 for 迴圈內，提示後立即理解並修正（狀態是節點層級，非邊層級）。完成 BFS Kahn's Algorithm 實作；誤用 level-by-level 模板，提示後簡化；自行觀察到 DFS/BFS 圖方向相反的現象並補充註解。兩種解法均獨立完成且測試通過。時間 O(V+E)，空間 O(V+E)。
