@@ -92,6 +92,10 @@
       - 節點數 = 不同狀態的 `fn(i)` 數量（有 `@cache` 則每個狀態只算一次）。
       - 每個節點的時間 = 該狀態內枚舉的工作量。
       - Greedy 每節點 O(1)（找到第一個 return，各節點掃描範圍不重疊 → 均攤）；DP 每節點 O(n)（枚舉所有合法 j，掃描範圍大量重疊）。
+    - **v1 vs v2 DP 內層枚舉方式的對比**（LC 139）：
+      - **v1（枚舉 wordDict）**：內層 `for word in wordDict`（W 次），每次字串比對 O(L)，總時間 O(N×W×L)。不能在 `dp[i+w] = True` 後 break，因為不同 word 長度不同，會更新**不同位置**的 dp 格子。
+      - **v2（枚舉長度 + hash set）**：內層 `for length in range(1, min(i, max_len)+1)`（最多 L 次），hash set 查詢 O(L)，總時間 O(WL + NL²)。找到任意一個合法切割後可以立即 break，因為不同 length 都只是在寫**同一個** dp[i]。
+      - **核心洞察**：wordDict 最多 1000 個字，但長度種類最多 20 種（L ≤ 20）。應枚舉長度，而非枚舉字典。最壞情境 v1 N×W = 300,000 vs v2 NL² = 120,000，差距顯著。
 - **2-D Dynamic Programming (二維動態規劃)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -124,4 +128,4 @@
 - [2026-03-11] LC 207 Course Schedule (Graphs / DFS + BFS): 正確識別「有向圖環形偵測」核心。自行推導出三色狀態機（unseen/path/seen）並完整說明語意。初版將 state 變更寫在 for 迴圈內，提示後立即理解並修正（狀態是節點層級，非邊層級）。完成 BFS Kahn's Algorithm 實作；誤用 level-by-level 模板，提示後簡化；自行觀察到 DFS/BFS 圖方向相反的現象並補充註解。兩種解法均獨立完成且測試通過。時間 O(V+E)，空間 O(V+E)。
 - [2026-03-11] LC 452 Minimum Number of Arrows to Burst Balloons (Intervals / Greedy): 熟練度：普通→熟練。概念澄清方面：初始誤解 Bounding Box（找 max(start)/min(end)），提示後正確理解題目是「最少點覆蓋」問題。核心貪心邏輯上對「為何按 end 排序（EDF 思維）」一開始理解有困難，引導後能以具體反例（A=[1,10]、B=[2,3]、C=[4,5]）對比 start 排序 vs end 排序的邏輯複雜度，豁然開朗。交換論證（Exchange Argument）獨立理解無困難。實作上一開始漏掉 sorted() 第一個位置參數（`sorted(key=...)` 少傳 iterable），自行發現並修正。最終實作乾淨簡潔：按 end 排序 + 初始化「先射第一支箭」（類 dummy node 設計）+ 單趟掃描。時間 O(n log n)，空間 O(n)（可改 in-place sort 優化為 O(1)）。
 - [2026-03-11] LC 139 Word Break — Backtracking 解法 (Backtracking / 1-D DP): 首次明確區分兩種 Backtracking 模式。初始直覺是暴力組合所有可能，在引導下正確重構為「推進字串消耗位置」的框架。能自行撰寫正確的 `can_break` 遞迴，并主動嘗試從後往前收斂（`can_break(len(s)) → 0`）的方向，與原始版和 DP 均等價正確。觀察到 dead code（`start > len(s)` 永不觸發），能理解 Python slice 截短原因。對「Combination 模式（from i）」vs「Word Break 模式（全掃 wordDict）」的差異在提示後清晰理解。時間 O(W^N)，空間 O(N)。
-- [2026-03-11] LC 139 Word Break — DP 解法 (1-D DP): 自行定義 `dp[i] = s[:i] 是否可被拆解`，並推導子問題轉移方程有兩種等效技法（dp[i-w] 推 forward 、dp[i+w] 從 back），能自行辨別並選擇其一實作。理解 DP = Backtracking+@cache 的 bottom-up 等價形式，兩者複雜度相同 O(N×W×L)。時間複雜度註解初定為 O(N×W)，提示後理解 slice 比對慿耗 O(L)。實作乾淨簡潔且測試通過。最佳下一题：LC 322 Coin Change、LC 377 Combination Sum IV、LC 140 Word Break II。
+- [2026-03-11] LC 139 Word Break — DP v2 解法 (1-D DP): 在 DP v1（枚舉 wordDict）基礎上進一步最佳化，改為「枚舉子串長度 + hash set 查詢」。能理解核心洞察：wordDict 最多 1000 個字，但長度種類最多 20 種，應枚舉長度（O(L²)）而非字典（O(W×L)）。能正確推導 `range(1, min(i, max_len)+1)` 的邊界（為何不能直接寫 `range(1, max_len)`：語義不同、off-by-one、需要 min(i,...) 防止 j < 0）。能理解 v2 可以 break 而 v1 不行的根本原因：v1 不同 word 更新不同 dp 位置，v2 不同 length 寫同一個 dp[i]。主動提出「枚舉長度比位置更直覺」並完成重構，可讀性提升。時間 O(WL + NL²)，空間 O(WL + N)。

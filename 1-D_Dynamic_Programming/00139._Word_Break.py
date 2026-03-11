@@ -66,7 +66,8 @@ from typing import List
 class Solution:
     def wordBreak(self, s: str, wordDict: List[str]) -> bool:
         # return self._backtracking(s, wordDict)
-        return self._dp(s, wordDict)
+        # return self._dp(s, wordDict)
+        return self._dp_v2(s, wordDict)
 
     def _backtracking(self, s: str, wordDict: List[str]) -> bool:
         """
@@ -118,7 +119,7 @@ class Solution:
 
     def _dp(self, s: str, wordDict: List[str]) -> bool:
         """
-        解法二：1-D Dynamic Programming
+        解法二：1-D Dynamic Programming（枚舉字典中的每個字）
 
         思路：
             dp[i] = s[:i] 是否可以被拆解
@@ -140,6 +141,13 @@ class Solution:
             - 由於 L ≤ 20（題目限制），面試中常簡化寫成 O(N × W)
         空間複雜度：O(N)
             - dp 陣列大小 N+1
+
+        ⚠️ 與 v2 的差異（為何 v2 更優）：
+            本版本內層枚舉 wordDict（W 個字），每次做字串比對 O(L)。
+            題目允許 W=1000、但長度最多 20 種（L≤20），
+            → 等效枚舉次數 = N × W，可能比 N × L 大很多。
+            v2 改為「枚舉長度 j」，只需 O(L) 次迭代並用 hash set O(L) 查詢，
+            → 時間降為 O(N × L²)，且完全不受 W 影響。
         """
 
         size = len(s)
@@ -157,9 +165,69 @@ class Solution:
                 # s[i:i+w] == word：從 i 開始的子串恰好匹配這個字
                 if dp[i] and i + w <= size and s[i : i + w] == word:
                     dp[i + w] = True  # s[:i+w] 也可被拆解
+                    # ❌ 不可 break：此 word 把 dp[i+w] 標記為 True，
+                    #    但其他 word（不同長度）可能更新別的位置 dp[i+w']，
+                    #    提早 break 會漏掉那些位置的標記。
 
         # print(dp)
         return dp[size]
+
+    def _dp_v2(self, s: str, wordDict: List[str]) -> bool:
+        """
+        解法三：1-D Dynamic Programming（枚舉長度 + Hash Set 查詢）
+
+        思路：
+            與 v1 相同 —— dp[i] 表示 s[:i] 是否可拆解。
+            差異在「內層枚舉方式」：
+                v1：枚舉 wordDict 中每個字（W 次）再比對字串
+                v2：枚舉可能的切割長度 j（最多 L 種），再用 hash set O(L) 查詢
+
+            關鍵觀察：
+                wordDict 有多達 1000 個字，但長度最多只有 20 種（L ≤ 20）。
+                → 應枚舉長度，而非枚舉字典。
+
+        子問題（top-down 視角，對應 dfs(i)）：
+            dfs(i) = True  若存在 j 使得 s[j:i] in words 且 dfs(j) = True
+
+        等效 bottom-up：
+            dp[i] = True  若存在 j 使得 s[j:i] in words 且 dp[j] = True
+            其中 j 的範圍：max(0, i - max_len) ≤ j < i
+
+        時間複雜度：O(WL + NL²)
+            - W = len(wordDict)，建 hash set 需 O(WL)
+            - N = len(s)，外層 for i 跑 N 次
+            - 內層 j 最多跑 L 次（L = max_len ≤ 20）
+            - s[j:i] in words：字串 hash 需 O(L)
+            - 總計：O(WL + N × L × L) = O(WL + NL²)
+            - 由於 L ≤ 20，NL² ≤ 300 × 400 = 120_000，遠小於 v1 的 N×W = 300_000
+        空間複雜度：O(WL + N)
+            - hash set O(WL) + dp 陣列 O(N)
+        """
+
+        # max_len：限制內層 j 的枚舉範圍，超過此長度的子串不可能在 wordDict 中
+        max_len = max(map(len, wordDict))
+        words = set(wordDict)  # hash set，讓 s[j:i] in words 查詢達到 O(L)（hash 計算）
+
+        N = len(s)
+        dp = [False] * (N + 1)
+        dp[0] = True
+
+        for i in range(1, N + 1):
+            for length in range(1, min(i, max_len) + 1):
+                # length：當前嘗試的子串長度（1 ~ min(i, max_len)）
+                #   j   ：子串的起始索引，由 length 推導得出
+                j = i - length
+
+                # dp[j]：s[:j] 可拆解（前半段成立）
+                # s[j:i] in words：後半段恰好是字典中的字
+                if dp[j] and s[j:i] in words:
+                    dp[i] = True
+
+                    # dp[i] 已確定為 True，
+                    # 不同的 length 都只是在寫同一個 dp[i]，繼續找毫無意義。
+                    break
+
+        return dp[N]
 
 
 def main():
