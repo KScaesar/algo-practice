@@ -26,8 +26,12 @@
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
 - **Binary Search (二分搜尋)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通 -> 熟練
   - _常犯錯誤/思考盲點：_
+    - **二分搜邊界預設值 (Edge Case)**：當陣列所有元素都大於/小於 target 時，預設的 index 該落在哪裡？
+      - 找 `>= target`（lower_bound）或 `> target`（upper_bound）時，若全部元素過小，合理的插入點在陣列最尾巴外側，預設 `ans = len(nums)`。
+      - 找 `<= target` 或 `< target` 時，若全部元素過大，合理的分界點在陣列最前方外側，預設 `ans = -1`。
+    - **利用對稱性簡化實作**：`last <= target` 完全等價於 `upper_bound(target) - 1`。在整數域中即是 `find_gte(nums, target+1) - 1`，這能讓我們只依靠一個正確處理過邊界的 `find_gte` 函數，無腦應付所有變形。
 - **Linked List (連結串列)**
   - _熟練度評估：_
   - _常犯錯誤/思考盲點：_
@@ -129,3 +133,6 @@
 - [2026-03-11] LC 452 Minimum Number of Arrows to Burst Balloons (Intervals / Greedy): 熟練度：普通→熟練。概念澄清方面：初始誤解 Bounding Box（找 max(start)/min(end)），提示後正確理解題目是「最少點覆蓋」問題。核心貪心邏輯上對「為何按 end 排序（EDF 思維）」一開始理解有困難，引導後能以具體反例（A=[1,10]、B=[2,3]、C=[4,5]）對比 start 排序 vs end 排序的邏輯複雜度，豁然開朗。交換論證（Exchange Argument）獨立理解無困難。實作上一開始漏掉 sorted() 第一個位置參數（`sorted(key=...)` 少傳 iterable），自行發現並修正。最終實作乾淨簡潔：按 end 排序 + 初始化「先射第一支箭」（類 dummy node 設計）+ 單趟掃描。時間 O(n log n)，空間 O(n)（可改 in-place sort 優化為 O(1)）。
 - [2026-03-11] LC 139 Word Break — Backtracking 解法 (Backtracking / 1-D DP): 首次明確區分兩種 Backtracking 模式。初始直覺是暴力組合所有可能，在引導下正確重構為「推進字串消耗位置」的框架。能自行撰寫正確的 `can_break` 遞迴，并主動嘗試從後往前收斂（`can_break(len(s)) → 0`）的方向，與原始版和 DP 均等價正確。觀察到 dead code（`start > len(s)` 永不觸發），能理解 Python slice 截短原因。對「Combination 模式（from i）」vs「Word Break 模式（全掃 wordDict）」的差異在提示後清晰理解。時間 O(W^N)，空間 O(N)。
 - [2026-03-11] LC 139 Word Break — DP v2 解法 (1-D DP): 在 DP v1（枚舉 wordDict）基礎上進一步最佳化，改為「枚舉子串長度 + hash set 查詢」。能理解核心洞察：wordDict 最多 1000 個字，但長度種類最多 20 種，應枚舉長度（O(L²)）而非字典（O(W×L)）。能正確推導 `range(1, min(i, max_len)+1)` 的邊界（為何不能直接寫 `range(1, max_len)`：語義不同、off-by-one、需要 min(i,...) 防止 j < 0）。能理解 v2 可以 break 而 v1 不行的根本原因：v1 不同 word 更新不同 dp 位置，v2 不同 length 寫同一個 dp[i]。主動提出「枚舉長度比位置更直覺」並完成重構，可讀性提升。時間 O(WL + NL²)，空間 O(WL + N)。
+- [2026-03-12] LC 300 Longest Increasing Subsequence (1-D DP): 正確釐清 DP 狀態定義的兩種核心視角：「站在輸入 (考慮選或不選)」vs「站在答案 (強制結尾往前找枚舉)」。成功以「枚舉前輩」的視角實作 v2 版本的 Top-Down DP + Memoization。空間複雜度精準估算為 O(N)（遞迴深度 + cache 大小）。時間複雜度的分析，透過「狀態總數 × 計算單一狀態成本」的黃金公式，成功自行推導出 O(N²) 的正確結論。
+- [2026-03-12] LC 34 Find First and Last Position of Element in Sorted Array (Binary Search): 首次針對 二分搜尋（Binary Search）的五種邊界條件（find_gte, find_gt, find_lte, find_lt, find_equal）進行獨立實作。成功運用「Record and Reduce」模式（用 `ans` 記錄最佳解並持續縮小範圍），乾淨俐落避開了死迴圈。關鍵洞察：若將 `find_gte` 視為通用的 `lower_bound` 函數，不應在內部寫死 `if nums[ans] == target else -1` 的判斷，而應直接回傳最接近的 index，交由 caller（如 `searchRange`）來決定是否符合目標。此一 decouple 的思維展現了良好的軟體工程直覺。
+- [2026-03-12] LC 34 (尋找邊界優化): 深入探討 Binary Search 尋找不同邊界時的預設值設計（Edge Cases）。理解了當全陣列元素皆小於 target 時，找 `>= target` 應預設回傳 `len(nums)` 而非 `-1`，藉此吻合 STL 與 Python `bisect` 的標準行為。此外，成功體驗了整數域同構轉換 `last <= target == upper_bound(target) - 1` 所帶來的高可維護性，後續只靠單一底層函數（find_gte）就能實作出所有的邊界搜尋需求。
