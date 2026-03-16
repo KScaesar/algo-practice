@@ -101,8 +101,13 @@
       - **v2（枚舉長度 + hash set）**：內層 `for length in range(1, min(i, max_len)+1)`（最多 L 次），hash set 查詢 O(L)，總時間 O(WL + NL²)。找到任意一個合法切割後可以立即 break，因為不同 length 都只是在寫**同一個** dp[i]。
       - **核心洞察**：wordDict 最多 1000 個字，但長度種類最多 20 種（L ≤ 20）。應枚舉長度，而非枚舉字典。最壞情境 v1 N×W = 300,000 vs v2 NL² = 120,000，差距顯著。
 - **2-D Dynamic Programming (二維動態規劃)**
-  - _熟練度評估：_
+  - _熟練度評估：_ 普通（框架建立中）
   - _常犯錯誤/思考盲點：_
+    - **狀態定義的兩種視角（方法 a vs 方法 b）**：初期困惑「選或不選」與「枚舉選哪個」的差異，經引導後理解：
+      - 方法 a（前 i 個元素）：每個元素只需決定「要」或「不要」
+      - 方法 b（以 i 個元素結尾）：需要回溯前面「接在誰後面」
+    - **「結尾」是否有意義的判斷**：方法 b 適合需要「連接」的問題（如 LIS：必須知道結尾才能判斷遞增），LCS 不需要因為子序列的結尾是誰沒有特殊意義。
+    - **判斷口溜**：「如果不知道結尾是誰，能不能繼續往下算？」能的話 → 方法 a；不能的話 → 方法 b。
 - **Greedy (貪婪演算法)**
   - _熟練度評估：_ 普通
   - _常犯錯誤/思考盲點：_
@@ -136,3 +141,4 @@
 - [2026-03-12] LC 300 Longest Increasing Subsequence (1-D DP): 正確釐清 DP 狀態定義的兩種核心視角：「站在輸入 (考慮選或不選)」vs「站在答案 (強制結尾往前找枚舉)」。成功以「枚舉前輩」的視角實作 v2 版本的 Top-Down DP + Memoization。空間複雜度精準估算為 O(N)（遞迴深度 + cache 大小）。時間複雜度的分析，透過「狀態總數 × 計算單一狀態成本」的黃金公式，成功自行推導出 O(N²) 的正確結論。
 - [2026-03-12] LC 34 Find First and Last Position of Element in Sorted Array (Binary Search): 首次針對 二分搜尋（Binary Search）的五種邊界條件（find_gte, find_gt, find_lte, find_lt, find_equal）進行獨立實作。成功運用「Record and Reduce」模式（用 `ans` 記錄最佳解並持續縮小範圍），乾淨俐落避開了死迴圈。關鍵洞察：若將 `find_gte` 視為通用的 `lower_bound` 函數，不應在內部寫死 `if nums[ans] == target else -1` 的判斷，而應直接回傳最接近的 index，交由 caller（如 `searchRange`）來決定是否符合目標。此一 decouple 的思維展現了良好的軟體工程直覺。
 - [2026-03-12] LC 34 (尋找邊界優化): 深入探討 Binary Search 尋找不同邊界時的預設值設計（Edge Cases）。理解了當全陣列元素皆小於 target 時，找 `>= target` 應預設回傳 `len(nums)` 而非 `-1`，藉此吻合 STL 與 Python `bisect` 的標準行為。此外，成功體驗了整數域同構轉換 `last <= target == upper_bound(target) - 1` 所帶來的高可維護性，後續只靠單一底層函數（find_gte）就能實作出所有的邊界搜尋需求。
+- [2026-03-16] LC 1143 Longest Common Subsequence (2-D DP): 正確使用「方法 a（前 i 個元素的最優值）」定義狀態 `dfs(i,j)`。遞迴公式：配對成功 → `dfs(i-1,j-1) + 1`，配對失敗 → `max(dfs(i-1,j), dfs(i,j-1))`。成功獨立實作 Top-down DP + @cache，時間 O(m×n)，空間 O(m×n)。理解過程：初期困惑「選或不選」v.s.「枚舉選哪個」，經引導後理解 LCS 適合方法 a（核心是「選或不選」而非「接在誰後面」），並補充了「判斷口溜」幫助未來識別。

@@ -67,12 +67,51 @@ DP[i][j] = max(DP[i - 1][j], DP[i][j - 1]) , otherwise
 - [Subsequence With the Minimum Score](https://leetcode.com/problems/subsequence-with-the-minimum-score/) (Hard)
 """
 
-from typing import List, Optional, Dict, Tuple
+from functools import cache
 
 
 class Solution:
     def longestCommonSubsequence(self, text1: str, text2: str) -> int:
-        pass
+        """
+        解法：Top-down DP (Recursion + Memoization)
+
+        狀態定義（方法 a）：
+            dfs(i, j) = text1[0..i] 與 text2[0..j] 的最長共同子序列長度
+            - i, j 為 index（0-based），範圍 [0, N-1]
+            - i == -1 或 j == -1 時，空字串的 LCS = 0
+
+        遞迴公式：
+            - 若 text1[i] == text2[j]:  配對成功，長度 +1
+              → dfs(i, j) = dfs(i-1, j-1) + 1
+            - 若不同:  放棄其中一個字元，取最大值
+              → dfs(i, j) = max(dfs(i-1, j), dfs(i, j-1))
+
+        時間複雜度：O(m × n)
+            - 每個 (i, j) 狀態只計算一次，共 m × n 種狀態
+
+        空間複雜度：O(m × n)
+            - Memo table 儲存 m × n 種狀態
+            - 遞迴堆疊最多 O(m + n) depth
+
+        為什麼選擇「方法 a（前 i 個元素）」而非「方法 b（以 i 結尾）」？
+            - LCS 的核心遞輯是「選或不選」，不是「接在誰後面」
+            - 當 text1[i] != text2[j] 時，我們只能「放棄其中一個字元」
+            - 子序列的「結尾是誰」沒有特殊意義，無法用來推導下一步
+            - 方法 b 適合需要「連接」的問題（如 LIS：必須知道結尾才能判斷遞增）
+        """
+        N1, N2 = len(text1), len(text2)
+
+        @cache
+        def dfs(i, j):
+            if i == -1 or j == -1:
+                return 0
+
+            if text1[i] == text2[j]:
+                return dfs(i - 1, j - 1) + 1
+            else:
+                return max(dfs(i - 1, j), dfs(i, j - 1))
+
+        return dfs(N1 - 1, N2 - 1)
 
 
 def main():
